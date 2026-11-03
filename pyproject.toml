@@ -1,0 +1,23 @@
+[project]
+name = "quilr-assessment"
+version = "0.1.0"
+description = "QuilrAI AI Field Developer take-home: MCP server, MCP security gateway, streaming PII guardrail, rate-limiting model router"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.20",
+    "pydantic>=2.11",
+    "starlette>=0.47",
+    "uvicorn>=0.35",
+    "httpx>=0.28",
+    "pyjwt>=2.10",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
