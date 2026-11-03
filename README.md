@@ -50,7 +50,7 @@ Tools: `get_customer_record(customer_id)` and `trigger_refund(customer_id, amoun
 | Unknown method | JSON-RPC error `-32601` (from the SDK) |
 | Valid input, customer doesn't exist | Normal result with `isError: true`. This is a business-logic failure the model can read and act on |
 
-> Spec note: the assessment asks for JSON-RPC error codes on invalid input, so that's what this does. The newest MCP spec revision (2025-11-25) recommends reporting input-validation failures as `isError: true` tool results instead, so the model can self-correct. In production I'd follow the spec version the clients negotiate. The switch is confined to `handle_call_tool`.
+> Spec note: the assessment asks for JSON-RPC error codes on invalid input, so that's what this does. The current MCP spec (2026-07-28, unchanged since 2025-11-25) recommends reporting input-validation failures as `isError: true` tool results instead, so the model can self-correct; it reserves JSON-RPC errors for unknown tools, malformed requests and server errors. In production I'd follow the spec version the clients negotiate. The switch is confined to `handle_call_tool`.
 
 **stdout purity.** In a stdio MCP server, any byte on stdout that isn't a JSON-RPC frame breaks the client. Three layers protect it:
 1. `logging` is configured with `stream=sys.stderr` at import.
@@ -88,7 +88,7 @@ curl -s localhost:8080/mcp -H "Authorization: Bearer $VIEWER" -H 'content-type: 
 
 **HTTP status for -32001:** I return 200 with the JSON-RPC error body, the usual JSON-RPC-over-HTTP convention, so MCP clients surface it as a normal tool-call error rather than a transport failure. Authentication failures are 401 because the caller has to fix its credentials.
 
-**Production next steps:** verify JWTs against the IdP's JWKS (RS256) instead of a shared secret; put the policy in config (tool allow/deny lists per role, not just a prefix); optionally filter `admin_*` tools out of `tools/list` for viewers (the spec here says pass-through, so I didn't); add a request-size limit per tenant and per-tool rate limits.
+**Production next steps:** verify JWTs against the IdP's JWKS (RS256) instead of a shared secret; put the policy in config (tool allow/deny lists per role, not just a prefix); filter `admin_*` tools out of `tools/list` for viewers. The assessment asks for pass-through, so I didn't, but the current MCP spec (2026-07-28) explicitly allows `tools/list` to vary by the caller's authorization; add a request-size limit per tenant and per-tool rate limits.
 
 ---
 
